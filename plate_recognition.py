@@ -176,7 +176,7 @@ Enable Make Model and Color prediction:
         help='Predict vehicle make and model. Only available to paying users.')
 
 
-def main():
+def recoganization():
     args = parse_arguments(custom_args)
     paths = args.files
 
@@ -207,4 +207,5 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    recoganization()
+
