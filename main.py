@@ -1,6 +1,10 @@
 import tkinter as tk
 import tkinter.filedialog as dir
 from PIL import ImageTk, Image
+import subprocess
+import os
+import json
+import plate_recognition
 import matplotlib.pyplot as plt
 
 
@@ -17,25 +21,24 @@ frame = tk.Frame(window, width=300, height=200, bg="grey")
 frame.pack()
 frame.place(anchor='center', relx=0.5, rely=0.5)
 
+
 # canvas = tk.Canvas(window, width=300, height=200, bg="grey")
 # canvas.pack()
 # canvas.place(anchor='center', relx=0.5, rely=0.5)
 
 
 def load_image():
-    global img
-    path = dir.askopenfilename(initialdir="/", title="Select image",
+    global img, path
+    path = dir.askopenfilename(initialdir=os.getcwd(), title="Select image",
                                filetypes=(("png files", "*.jpg"), ("all file", "*.*")))
-    img = ImageTk.PhotoImage(Image.open(path))
+    img = ImageTk.PhotoImage(Image.open(path).resize((300, 200), Image.ANTIALIAS))
     label = tk.Label(frame, image=img)
     label.pack()
 
 
-btn = tk.Button(window, text='Click me !', command=load_image)
-btn.place(x=25, y=100)
-
-newLabel = tk.Label(text=" This is the starting point of our project ")
-newLabel.grid(column=0, row=0)
+def run():
+    result = subprocess.check_output(["python", 'plate_recognition.py', "-a", "b043ef3a2da24bbde85109c5b49b61046519a1bc", path])
+    print(json.loads(result))
 
 app_label = tk.Label(
     text=" Licence Plate Recognition ",
@@ -51,20 +54,21 @@ empty_lane_label2.grid(column=0, row=3)
 
 insert_bt = tk.Button(
     text="Insert",
-    width=20,
+    width=15,
     height=1,
     bg="grey",
     fg="black",
-    command=onclick
+    command=load_image
 )
 insert_bt.grid(column=0, row=2)
 
 process_bt = tk.Button(
     text="Process",
-    width=20,
+    width=15,
     height=1,
     bg="grey",
-    fg="black"
+    fg="black",
+    command=run
 )
 process_bt.grid(column=0, row=4)
 
