@@ -3,9 +3,9 @@ import tkinter.filedialog as dir
 from PIL import ImageTk, Image
 import subprocess
 import os
-import json
-import plate_recognition
 import matplotlib.pyplot as plt
+import plate_recognition_api
+import base64
 
 
 def onclick():
@@ -26,19 +26,27 @@ frame.place(anchor='center', relx=0.5, rely=0.5)
 # canvas.pack()
 # canvas.place(anchor='center', relx=0.5, rely=0.5)
 
+# GLOBAL VARIABLES
+img_base64 = None
 
 def load_image():
-    global img, path
+    global img, path, img_base64
     path = dir.askopenfilename(initialdir=os.getcwd(), title="Select image",
                                filetypes=(("png files", "*.jpg"), ("all file", "*.*")))
     img = ImageTk.PhotoImage(Image.open(path).resize((300, 200), Image.ANTIALIAS))
+
+    # Read image file as base64 encoded string
+    with open(path, "rb") as img_file:
+        img_base64 = base64.b64encode(img_file.read()).decode('utf-8')
+
     label = tk.Label(frame, image=img)
     label.pack()
 
 
 def run():
-    result = subprocess.check_output(["python", 'plate_recognition.py', "-a", "b043ef3a2da24bbde85109c5b49b61046519a1bc", path])
-    print(json.loads(result))
+    resultData = plate_recognition_api.identify_license_plate_from_image(img_base64)
+    print(resultData.results)
+    print("Plate found: ", resultData.is_plate_found())
 
 app_label = tk.Label(
     text=" Licence Plate Recognition ",
