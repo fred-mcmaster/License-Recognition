@@ -1,83 +1,98 @@
 import tkinter as tk
+import customtkinter as ctk
 import tkinter.filedialog as dir
 from PIL import ImageTk, Image
-import subprocess
 import os
-import matplotlib.pyplot as plt
 import plate_recognition_api
 import base64
 
+ctk.set_appearance_mode("System")
+ctk.set_default_color_theme("blue")
 
-def onclick():
-    testing = tk.Label(text="testing")
-    # testing.pack()
-
-
-window = tk.Tk()
+window = ctk.CTk()
 window.title(" Licence Recognition App ")
 window.geometry("600x400")
 
-frame = tk.Frame(window, width=300, height=200, bg="grey")
-frame.pack()
-frame.place(anchor='center', relx=0.5, rely=0.5)
+window.grid_rowconfigure(0, weight=1)
+window.grid_columnconfigure(1, weight=1)
 
+frame_left = ctk.CTkFrame(master=window, width=150, corner_radius=0)
+frame_left.grid(row=0, column=0, sticky="nswe")
 
-# canvas = tk.Canvas(window, width=300, height=200, bg="grey")
-# canvas.pack()
-# canvas.place(anchor='center', relx=0.5, rely=0.5)
+frame_right = ctk.CTkFrame(master=window)
+frame_right.grid(row=0, column=1, sticky="nswe", padx=10, pady=10)
+
+frame_right.rowconfigure((0, 1, 2), weight=1)
+frame_right.rowconfigure(3, weight=10)
+frame_right.columnconfigure((0, 1), weight=1)
+frame_right.columnconfigure(2, weight=0)
+
+frame_img = ctk.CTkFrame(master=frame_right)
+frame_img.grid(row=0, column=0, columnspan=2, rowspan=2, sticky="nsew")
+frame_img.rowconfigure(0, weight=1)
+frame_img.columnconfigure(0, weight=1)
+
+label_img = ctk.CTkLabel(master=frame_img,
+                         text="",
+                         height=200,
+                         corner_radius=6,  # <- custom corner radius
+                         fg_color=("white", "gray38"),  # <- custom tuple-color
+                         justify=tk.LEFT)
+label_img.grid(column=0, row=0, sticky="nwe", padx=15, pady=15)
+
+entry = ctk.CTkEntry(master=frame_right,
+                     width=120,
+                     placeholder_text="Plate")
+entry.grid(row=3, column=0, columnspan=2, pady=20, padx=20, sticky="we")
 
 # GLOBAL VARIABLES
 img_base64 = None
 
+
 def load_image():
     global img, path, img_base64
+
     path = dir.askopenfilename(initialdir=os.getcwd(), title="Select image",
                                filetypes=(("png files", "*.jpg"), ("all file", "*.*")))
-    img = ImageTk.PhotoImage(Image.open(path).resize((300, 200), Image.ANTIALIAS))
+    img = ImageTk.PhotoImage(Image.open(path).resize((400, 200), Image.ANTIALIAS))
 
     # Read image file as base64 encoded string
     with open(path, "rb") as img_file:
         img_base64 = base64.b64encode(img_file.read()).decode('utf-8')
 
-    label = tk.Label(frame, image=img)
-    label.pack()
+    label_img.configure(image=img)
 
 
 def run():
     resultData = plate_recognition_api.identify_license_plate_from_image(img_base64)
     print(resultData.results)
+    plate = resultData.results[0]['plate']
     print("Plate found: ", resultData.is_plate_found())
+    entry.delete(0, tk.END)
+    entry.insert(0, plate)
 
-app_label = tk.Label(
+
+app_label = ctk.CTkLabel(
+    master=frame_left,
     text=" Licence Plate Recognition ",
-    font="bold"
+    text_font=("Roboto Medium", -16)
 )
+app_label.grid(row=1, column=0, pady=10, padx=10)
 
-app_label.grid(column=2, row=0)
-
-empty_lane_label = tk.Label(text=" ")
-empty_lane_label.grid(column=0, row=1)
-empty_lane_label2 = tk.Label(text=" ")
-empty_lane_label2.grid(column=0, row=3)
-
-insert_bt = tk.Button(
+insert_bt = ctk.CTkButton(
+    master=frame_left,
     text="Insert",
-    width=15,
-    height=1,
-    bg="grey",
-    fg="black",
+    height=32,
     command=load_image
 )
-insert_bt.grid(column=0, row=2)
+insert_bt.grid(row=2, column=0, pady=10, padx=10)
 
-process_bt = tk.Button(
+process_bt = ctk.CTkButton(
+    master=frame_left,
     text="Process",
-    width=15,
-    height=1,
-    bg="grey",
-    fg="black",
+    height=32,
     command=run
 )
-process_bt.grid(column=0, row=4)
+process_bt.grid(row=3, column=0, pady=10, padx=20)
 
 window.mainloop()
