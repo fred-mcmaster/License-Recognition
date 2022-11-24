@@ -62,6 +62,19 @@ def load_image():
 
     label_img.configure(image=img)
 
+"""
+def crop(img_crop):
+    bg = Image.new(img_crop.mode, img_crop.size, img_crop.getpixel((0,0)))
+    diff = ImageChops.difference(img_crop, bg)
+    diff = ImageChops.add(diff, diff, 2.0, -100)
+    bbox = diff.getbbox()
+    if bbox:
+        return img_crop.crop(bbox)
+"""
+
+def percent(val):
+    conv_ = float(val)*10
+    print (str(conv_) + '%')
 
 def run():
     resultData = plate_recognition_api.identify_license_plate_from_image(img_base64)
