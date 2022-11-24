@@ -1,4 +1,5 @@
 # Byte-compiled / optimized / DLL files
+__pycache__/plate_recognition.cpython-37.pyc
 __pycache__/
 *.py[cod]
 *$py.class
