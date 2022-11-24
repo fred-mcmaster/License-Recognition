@@ -22,7 +22,7 @@ frame_left.grid(row=0, column=0, sticky="nswe")
 frame_right = ctk.CTkFrame(master=window)
 frame_right.grid(row=0, column=1, sticky="nswe", padx=10, pady=10)
 
-frame_right.rowconfigure((0, 1, 2), weight=1)
+frame_right.rowconfigure([0, 1, 2], weight=1)
 frame_right.rowconfigure(3, weight=10)
 frame_right.columnconfigure((0, 1), weight=1)
 frame_right.columnconfigure(2, weight=0)
@@ -40,10 +40,10 @@ label_img = ctk.CTkLabel(master=frame_img,
                          justify=tk.LEFT)
 label_img.grid(column=0, row=0, sticky="nwe", padx=15, pady=15)
 
-entry = ctk.CTkEntry(master=frame_right,
-                     width=120,
-                     placeholder_text="Plate")
-entry.grid(row=3, column=0, columnspan=2, pady=20, padx=20, sticky="we")
+entry = ctk.CTkEntry(master=frame_left,
+                     width=60,
+                     placeholder_text="Plate Number:")
+entry.grid(row=4, column=0, columnspan=2, pady=20, padx=20, sticky="we")
 
 # GLOBAL VARIABLES
 img_base64 = None
@@ -79,10 +79,13 @@ def percent(val):
 def run():
     resultData = plate_recognition_api.identify_license_plate_from_image(img_base64)
     print(resultData.results)
-    plate = resultData.results[0]['plate']
-    print("Plate found: ", resultData.is_plate_found())
-    entry.delete(0, tk.END)
-    entry.insert(0, plate)
+    # here we need to do the null check. the result list may be empty.
+    if resultData.is_plate_found():
+        plate = resultData.results[0]['plate']
+        print("Plate found: ", resultData.is_plate_found())
+        entry.delete(0, tk.END)
+        entry.insert(0, plate)
+    # alert message to user.
 
 
 app_label = ctk.CTkLabel(
