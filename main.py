@@ -71,7 +71,6 @@ def crop(img_crop):
     if bbox:
         return img_crop.crop(bbox)
 """
-
 def percent(val):
     conv_ = float(val)*10
     print (str(conv_) + '%')
