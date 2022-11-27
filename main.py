@@ -5,8 +5,10 @@ from PIL import ImageTk, Image, ImageChops
 import os
 import plate_recognition_api
 import base64
+
 import io
 import json
+
 
 ctk.set_appearance_mode("System")
 ctk.set_default_color_theme("blue")
@@ -35,6 +37,7 @@ label_score = ctk.CTkLabel(master=frame_left,
                            text="",
                            fg_color=("white", "gray38"))
 label_score.grid(row=7, column=0, columnspan=2, pady=(0, 5), padx=20, sticky="we")
+
 
 label_moret = ctk.CTkLabel(master=frame_left,
                            text="More Vehicle Info:",
@@ -132,6 +135,8 @@ def set_cropped_image(box):
         label_crop.configure(image=img_cropped)
 
 
+
+
 def percent(val):
     conv_ = round(float(val) * 100)
     return str(conv_) + '%'
@@ -188,7 +193,9 @@ insert_bt = ctk.CTkButton(
     height=32,
     command=load_image
 )
+
 insert_bt.grid(row=2, column=0, pady=10, padx=20)
+
 
 process_bt = ctk.CTkButton(
     master=frame_left,
