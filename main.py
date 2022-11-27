@@ -7,8 +7,6 @@ import plate_recognition_api
 import base64
 import json
 
-from plate_recognition_result_ui import PlateRecognitionUiResults, Plate, Region, Vehicle
-
 ctk.set_appearance_mode("System")
 ctk.set_default_color_theme("blue")
 
@@ -84,7 +82,6 @@ label_crop.grid(column=0, row=0, sticky="nwe", padx=15, pady=15)
 
 # GLOBAL VARIABLES
 img_base64 = None
-plate_results_ui = None
 
 
 def load_image():
@@ -142,18 +139,11 @@ def run():
         entry.insert(0, plate)
         label_score.configure(text=percent(plate_score), font=('Times New Roman', 10, 'bold'))
 
-        # Map fields from API to display in UI object
-        plate_results_ui = PlateRecognitionUiResults()
-        plate_results_ui.plate = Plate(plate, percent(plate_score))
-        # TODO: map region and vehicle to UI object
-        region_obj = Region(region.code, percent(region.score))
-        if region_obj:
+        if region:
             label_more.configure(text=region.code.upper() + " , " + vehicle.type,
                                  font=('Times New Roman', 10, 'bold'))
         else:
             label_more.configure(text="No Vehicle Info")
-
-        print(plate_results_ui.toJSON())
 
     # alert message to user.
     else:
