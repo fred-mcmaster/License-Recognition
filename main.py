@@ -5,7 +5,6 @@ from PIL import ImageTk, Image, ImageChops
 import os
 import plate_recognition_api
 import base64
-import json
 
 from plate_recognition_result_ui import PlateRecognitionUiResults, Plate, Region, Vehicle
 
@@ -36,6 +35,7 @@ label_score = ctk.CTkLabel(master=frame_left,
                            text="",
                            fg_color=("white", "gray38"))
 label_score.grid(row=7, column=0, columnspan=2, pady=(0, 5), padx=20, sticky="we")
+
 
 label_moret = ctk.CTkLabel(master=frame_left,
                            text="More Vehicle Info:",
@@ -101,6 +101,7 @@ def load_image():
     label_img.configure(image=img)
 
 
+
 def crop(img_crop):
     bg = Image.new(img_crop.mode, img_crop.size, img_crop.getpixel((0, 0)))
     diff = ImageChops.difference(img_crop, bg)
@@ -110,6 +111,7 @@ def crop(img_crop):
         # label_crop.configure(image=img_crop.crop(bbox))
         print(bbox)
         # return img_crop.crop(bbox)
+
 
 
 def percent(val):
@@ -172,7 +174,9 @@ insert_bt = ctk.CTkButton(
     height=32,
     command=load_image
 )
+
 insert_bt.grid(row=2, column=0, pady=10, padx=20)
+
 
 process_bt = ctk.CTkButton(
     master=frame_left,
