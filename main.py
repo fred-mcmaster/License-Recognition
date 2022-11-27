@@ -84,6 +84,7 @@ def run():
 
     resultData = plate_recognition_api.identify_license_plate_from_image(img_base64)
     print(resultData.results)
+    print("Plate found: ", resultData.is_plate_found())
     # here we need to do the null check. the result list may be empty.
     if resultData.is_plate_found():
         plate = resultData.results[0].plate
