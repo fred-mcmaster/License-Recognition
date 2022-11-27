@@ -5,6 +5,9 @@ from PIL import ImageTk, Image
 import os
 import plate_recognition_api
 import base64
+import json
+
+from plate_recognition_result_ui import PlateRecognitionUiResults, Plate
 
 ctk.set_appearance_mode("System")
 ctk.set_default_color_theme("blue")
@@ -47,6 +50,7 @@ entry.grid(row=4, column=0, columnspan=2, pady=20, padx=20, sticky="we")
 
 # GLOBAL VARIABLES
 img_base64 = None
+plate_results_ui = None
 
 
 def load_image():
@@ -73,19 +77,28 @@ def crop(img_crop):
 """
 def percent(val):
     conv_ = float(val)*100
-    print (str(conv_) + '%')
+    return str(conv_) + '%'
 
 def run():
+    global plate_results_ui
+
     resultData = plate_recognition_api.identify_license_plate_from_image(img_base64)
     print(resultData.results)
     # here we need to do the null check. the result list may be empty.
     if resultData.is_plate_found():
         plate = resultData.results[0]['plate']
+        plateScore = resultData.results[0]['score']
         print("Plate found: ", resultData.is_plate_found())
         entry.delete(0, tk.END)
         entry.insert(0, plate)
-    # alert message to user.
 
+        # Map fields from API to display in UI object
+        plate_results_ui = PlateRecognitionUiResults()
+        plate_results_ui.plate = Plate(plate, percent(plateScore))
+        # TODO: map region and vehicle to UI object
+        print(plate_results_ui.toJSON())
+
+    # alert message to user.
 
 app_label = ctk.CTkLabel(
     master=frame_left,
