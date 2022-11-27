@@ -12,5 +12,5 @@ def identify_license_plate_from_image(encodedImage):
     response = _session.post('https://api.platerecognizer.com/v1/plate-reader/', data=data)
 
     jsonData = json.loads(response.text)
-    resultData = PlateRecognitionResult(**jsonData)
+    resultData = PlateRecognitionResult(jsonData)
     return resultData
