@@ -72,7 +72,7 @@ def crop(img_crop):
         return img_crop.crop(bbox)
 """
 def percent(val):
-    conv_ = float(val)*10
+    conv_ = float(val)*100
     print (str(conv_) + '%')
 
 def run():
