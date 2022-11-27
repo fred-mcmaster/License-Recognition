@@ -1,0 +1,14 @@
+{
+	"plate": {
+		"number": "4534",
+		"score": "80.00%"
+	},
+	"region": {
+		"name": "CA-ON",
+		"score": "21.00%"
+	},
+	"vehicle": {
+		"type": "sedan",
+		"score": "21.00%"
+	}
+}
