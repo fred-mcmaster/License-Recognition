@@ -7,7 +7,7 @@ import plate_recognition_api
 import base64
 import json
 
-from plate_recognition_result_ui import PlateRecognitionUiResults, Plate
+from plate_recognition_result_ui import PlateRecognitionUiResults, Plate, Region, Vehicle
 
 ctk.set_appearance_mode("System")
 ctk.set_default_color_theme("blue")
@@ -86,16 +86,18 @@ def run():
     print(resultData.results)
     # here we need to do the null check. the result list may be empty.
     if resultData.is_plate_found():
-        plate = resultData.results[0]['plate']
-        plateScore = resultData.results[0]['score']
-        print("Plate found: ", resultData.is_plate_found())
+        plate = resultData.results[0].plate
+        plate_score = resultData.results[0].score
+        region = resultData.results[0].region
+        vehicle = resultData.results[0].vehicle
         entry.delete(0, tk.END)
         entry.insert(0, plate)
 
         # Map fields from API to display in UI object
         plate_results_ui = PlateRecognitionUiResults()
-        plate_results_ui.plate = Plate(plate, percent(plateScore))
+        plate_results_ui.plate = Plate(plate, percent(plate_score))
         # TODO: map region and vehicle to UI object
+        # plate_results_ui.region = Region(region.code, percent(region.score))
         print(plate_results_ui.toJSON())
 
     # alert message to user.
