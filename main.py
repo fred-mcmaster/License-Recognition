@@ -6,7 +6,9 @@ import os
 import plate_recognition_api
 import base64
 
-from plate_recognition_result_ui import PlateRecognitionUiResults, Plate, Region, Vehicle
+import io
+import json
+
 
 ctk.set_appearance_mode("System")
 ctk.set_default_color_theme("blue")
@@ -84,7 +86,6 @@ label_crop.grid(column=0, row=0, sticky="nwe", padx=15, pady=15)
 
 # GLOBAL VARIABLES
 img_base64 = None
-plate_results_ui = None
 
 
 def load_image():
@@ -97,20 +98,42 @@ def load_image():
     # Read image file as base64 encoded string
     with open(path, "rb") as img_file:
         img_base64 = base64.b64encode(img_file.read()).decode('utf-8')
-
     label_img.configure(image=img)
 
 
+def set_cropped_image(box):
 
-def crop(img_crop):
-    bg = Image.new(img_crop.mode, img_crop.size, img_crop.getpixel((0, 0)))
-    diff = ImageChops.difference(img_crop, bg)
-    diff = ImageChops.add(diff, diff, 2.0, -100)
-    bbox = diff.getbbox()
-    if bbox:
-        # label_crop.configure(image=img_crop.crop(bbox))
-        print(bbox)
-        # return img_crop.crop(bbox)
+    global path, img_cropped, label_crop
+
+    # Crop params (pixels)
+    left = box.xmin
+    top = box.ymin
+    right = box.xmax
+    bottom = box.ymax
+
+    # Crop original image
+    fixed_width = 250
+    original_image = Image.open(path)
+    img_cropped = original_image.crop((left, top, right, bottom))
+
+    # Maintain aspect ratio
+    width_percent = (fixed_width / float(img_cropped.size[0]))
+    dynamic_height = int((float(img_cropped.size[1]) * float(width_percent)))
+    img_cropped = img_cropped.resize((fixed_width, dynamic_height), Image.ANTIALIAS)
+    # img_cropped.show()
+
+    # Save cropped image to buffer
+    buffer = io.BytesIO()
+    img_cropped.save(buffer, format="png")
+    # base64croppedImageString = base64.b64encode(buffer.getvalue()).decode('utf-8')
+    # print("base64 cropped image was: ", base64croppedImageString)
+    original_image.close()
+
+    # Set cropped image buffer in UI
+    if img_cropped:
+        img_cropped = ImageTk.PhotoImage(data=buffer.getvalue())
+        label_crop.configure(image=img_cropped)
+
 
 
 
@@ -119,7 +142,7 @@ def percent(val):
     return str(conv_) + '%'
 
 def run():
-    global plate_results_ui
+    global path, img_cropped, label_crop
 
     resultData = plate_recognition_api.identify_license_plate_from_image(img_base64)
     print(resultData.results)
@@ -143,23 +166,19 @@ def run():
         entry.delete(0, tk.END)
         entry.insert(0, plate)
         label_score.configure(text=percent(plate_score), font=('Times New Roman', 10, 'bold'))
+        
+        box = resultData.results[0].box
+        set_cropped_image(box)
 
-        # Map fields from API to display in UI object
-        plate_results_ui = PlateRecognitionUiResults()
-        plate_results_ui.plate = Plate(plate, percent(plate_score))
-        # TODO: map region and vehicle to UI object
-        region_obj = Region(region.code, percent(region.score))
-        if region_obj:
+        if region:
             label_more.configure(text=region.code.upper() + " , " + vehicle.type,
                                  font=('Times New Roman', 10, 'bold'))
         else:
             label_more.configure(text="No Vehicle Info")
 
-        print(plate_results_ui.toJSON())
-
     # alert message to user.
     else:
-        label_crop.configure(text="License Plate Not Found !", font=('Times New Roman', 17, 'bold'))
+        label_crop.configure(text="License Plate Not Found !", font=('Times New Roman', 17, 'bold'), image='')
 
 app_label = ctk.CTkLabel(
     master=frame_left,
