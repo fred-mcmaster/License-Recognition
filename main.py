@@ -15,56 +15,65 @@ ctk.set_default_color_theme("blue")
 
 window = ctk.CTk()
 window.title(" Licence Recognition App ")
-window.geometry("600x400")
+window.geometry("800x500")
 
 window.grid_rowconfigure(0, weight=1)
-window.grid_columnconfigure(1, weight=1)
+window.grid_columnconfigure(0, weight=1)
+window.grid_columnconfigure(1, weight=7)
 
-frame_left = ctk.CTkFrame(master=window, width=150, corner_radius=0)
-frame_left.grid(row=0, column=0, sticky="nswe")
+frame_left = ctk.CTkFrame(master=window, corner_radius=0)
+frame_left.grid(row=0, column=0, columnspan=1, sticky="nswe")
+
+frame_left.columnconfigure(0, weight=1)
+frame_left
 
 entry = ctk.CTkEntry(master=frame_left,
                      width=60,
+                     height=40,
                      justify="center",
+                     text_font=("Roboto", -20),
                      placeholder_text="Plate Number:")
 entry.grid(row=5, column=0, columnspan=2, pady=(10, 5), padx=20, sticky="we")
 
 label_scoreText = ctk.CTkLabel(master=frame_left,
                                text="Accuracy:",
+                               text_font=("Roboto", -20),
                                anchor='w')
 label_scoreText.grid(row=6, column=0, pady=0, padx=20, sticky="we")
 label_score = ctk.CTkLabel(master=frame_left,
                            text="",
+                           height=40,
+                           text_font=("Roboto", -20),
                            fg_color=("white", "gray38"))
 label_score.grid(row=7, column=0, columnspan=2, pady=(0, 5), padx=20, sticky="we")
 
-
 label_moret = ctk.CTkLabel(master=frame_left,
                            text="More Vehicle Info:",
+                           text_font=("Roboto", -20),
                            anchor='w')
 label_moret.grid(row=8, column=0, pady=0, padx=20, sticky="we")
 label_more = ctk.CTkLabel(master=frame_left,
                           text="",
+                          height=40,
                           fg_color=("white", "gray38"))
 label_more.grid(row=9, column=0, columnspan=2, pady=(0, 5), padx=20, sticky="we")
-
 
 # Right Frame
 frame_right = ctk.CTkFrame(master=window)
 frame_right.grid(row=0, column=1, sticky="nswe", padx=10, pady=10)
 
-frame_right.rowconfigure([0, 1, 2], weight=1)
-frame_right.rowconfigure(3, weight=10)
-frame_right.columnconfigure((0, 1), weight=1)
-frame_right.columnconfigure(2, weight=0)
+frame_right.rowconfigure(3, weight=1)
+frame_right.columnconfigure(0, weight=1)
 
 frame_img = ctk.CTkFrame(master=frame_right)
-frame_img.grid(row=0, column=0, columnspan=2, rowspan=2, sticky="nsew")
+# frame_img.grid(row=0, column=0, rowspan=2, sticky="nsew")
+frame_img.pack(fill=tk.BOTH, expand=True)
 frame_img.rowconfigure(0, weight=1)
 frame_img.columnconfigure(0, weight=1)
 
 frame_crop = ctk.CTkFrame(master=frame_right)
-frame_crop.grid(row=3, column=0, columnspan=2, rowspan=2, sticky="nsew")
+# frame_crop.grid(row=3, column=0, sticky="nsew")
+frame_crop.pack(fill=tk.BOTH, expand=True)
 frame_crop.rowconfigure(0, weight=1)
 frame_crop.columnconfigure(0, weight=1)
 
@@ -74,7 +83,8 @@ label_img = ctk.CTkLabel(master=frame_img,
                          corner_radius=6,  # <- custom corner radius
                          fg_color=("white", "gray38"),  # <- custom tuple-color
                          justify=tk.LEFT)
-label_img.grid(column=0, row=0, sticky="nwe", padx=15, pady=15)
+label_img.grid(column=0, row=0, sticky="nwe")
+label_img.pack(fill=tk.BOTH, expand=True, padx=15, pady=15)
 
 label_crop = ctk.CTkLabel(master=frame_crop,
                           text="",
@@ -82,7 +92,8 @@ label_crop = ctk.CTkLabel(master=frame_crop,
                           corner_radius=6,  # <- custom corner radius
                           fg_color=("white", "gray38"),  # <- custom tuple-color
                           justify=tk.LEFT)
-label_crop.grid(column=0, row=0, sticky="nwe", padx=15, pady=15)
+label_crop.grid(column=0, row=0, sticky="nwe")
+label_crop.pack(fill=tk.BOTH, expand=True, padx=15, pady=15)
 
 # GLOBAL VARIABLES
 img_base64 = None
@@ -192,6 +203,7 @@ def percent(val):
     conv_ = round(float(val) * 100)
     return str(conv_) + '%'
 
+
 def run():
     global path, img_cropped, label_crop, resultData
 
@@ -206,8 +218,6 @@ def run():
     label_more.configure(text="")
     label_crop.configure(text="")
 
-
-
     # here we need to do the null check. the result list may be empty.
     if resultData.is_plate_found():
         plate = resultData.results[0].plate.upper()
@@ -216,14 +226,14 @@ def run():
         vehicle = resultData.results[0].vehicle
         entry.delete(0, tk.END)
         entry.insert(0, plate)
-        label_score.configure(text=percent(plate_score), font=('Times New Roman', 10, 'bold'))
-        
+        label_score.configure(text=percent(plate_score), font=('Times New Roman', 15, 'bold'))
+
         box = resultData.results[0].box
         set_cropped_image(box)
 
         if region:
             label_more.configure(text=region.code.upper() + " , " + vehicle.type,
-                                 font=('Times New Roman', 10, 'bold'))
+                                 font=('Times New Roman', 15, 'bold'))
             write_pdf_report()
         else:
             label_more.configure(text="No Vehicle Info")
@@ -232,26 +242,28 @@ def run():
     else:
         label_crop.configure(text="License Plate Not Found !", font=('Times New Roman', 17, 'bold'), image='')
 
+
 app_label = ctk.CTkLabel(
     master=frame_left,
     text=" Licence Plate Recognition ",
-    text_font=("Roboto Medium", -16)
+    text_font=("Roboto Medium", -20)
 )
 app_label.grid(row=1, column=0, pady=10, padx=10)
 
 insert_bt = ctk.CTkButton(
     master=frame_left,
     text="Insert",
+    text_font=("Roboto", -15),
     height=32,
     command=load_image
 )
 
 insert_bt.grid(row=2, column=0, pady=10, padx=20)
 
-
 process_bt = ctk.CTkButton(
     master=frame_left,
     text="Process",
+    text_font=("Roboto", -15),
     height=32,
     command=run
 )
