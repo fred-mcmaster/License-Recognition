@@ -15,7 +15,7 @@ ctk.set_default_color_theme("blue")
 
 window = ctk.CTk()
 window.title(" Licence Recognition App ")
-window.geometry("800x500")
+window.geometry("1000x600")
 
 window.grid_rowconfigure(0, weight=1)
 window.grid_columnconfigure(0, weight=1)
@@ -105,15 +105,15 @@ def load_image():
 
     path = dir.askopenfilename(initialdir=os.getcwd(), title="Select image",
                                filetypes=(("png files", "*.jpg"), ("all file", "*.*")))
-    img = ImageTk.PhotoImage(Image.open(path).resize((400, 200), Image.ANTIALIAS))
+    # img = ImageTk.PhotoImage(Image.open(path).resize((400, 200), Image.ANTIALIAS))
 
     # Keep aspect ratio of the loaded image consistent
-    # fixed_width = 400
-    # loaded_image = Image.open(path)
-    # width_percent = (fixed_width / float(loaded_image.size[0]))
-    # dynamic_height = int((float(loaded_image.size[1]) * float(width_percent)))
-    # loaded_image = loaded_image.resize((fixed_width, dynamic_height), Image.ANTIALIAS)
-    # img = ImageTk.PhotoImage(loaded_image)
+    fixed_width = 400
+    loaded_image = Image.open(path)
+    width_percent = (fixed_width / float(loaded_image.size[0]))
+    dynamic_height = int((float(loaded_image.size[1]) * float(width_percent)))
+    loaded_image = loaded_image.resize((fixed_width, dynamic_height), Image.ANTIALIAS)
+    img = ImageTk.PhotoImage(loaded_image)
 
     # Read image file as base64 encoded string
     with open(path, "rb") as img_file:
