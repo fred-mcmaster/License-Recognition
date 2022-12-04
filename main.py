@@ -5,10 +5,10 @@ from PIL import ImageTk, Image, ImageChops
 import os
 import plate_recognition_api
 import base64
+from fpdf import FPDF
 
 import io
 import json
-
 
 ctk.set_appearance_mode("System")
 ctk.set_default_color_theme("blue")
@@ -86,6 +86,7 @@ label_crop.grid(column=0, row=0, sticky="nwe", padx=15, pady=15)
 
 # GLOBAL VARIABLES
 img_base64 = None
+cropped_image_path = "cropped.png"
 
 
 def load_image():
@@ -95,15 +96,32 @@ def load_image():
                                filetypes=(("png files", "*.jpg"), ("all file", "*.*")))
     img = ImageTk.PhotoImage(Image.open(path).resize((400, 200), Image.ANTIALIAS))
 
+    # Keep aspect ratio of the loaded image consistent
+    # fixed_width = 400
+    # loaded_image = Image.open(path)
+    # width_percent = (fixed_width / float(loaded_image.size[0]))
+    # dynamic_height = int((float(loaded_image.size[1]) * float(width_percent)))
+    # loaded_image = loaded_image.resize((fixed_width, dynamic_height), Image.ANTIALIAS)
+    # img = ImageTk.PhotoImage(loaded_image)
+
     # Read image file as base64 encoded string
     with open(path, "rb") as img_file:
         img_base64 = base64.b64encode(img_file.read()).decode('utf-8')
     label_img.configure(image=img)
 
 
+def get_image_dynamic_width_fixed_height(img_path, height):
+    image = Image.open(img_path)
+    height_percent = (height / float(image.size[1]))
+    dynamic_width = int((float(image.size[0]) * float(height_percent)))
+    resized_image = image.resize((dynamic_width, height), Image.ANTIALIAS)
+    # resized_image.save("resized.png", format="png")
+    return dynamic_width
+
+
 def set_cropped_image(box):
 
-    global path, img_cropped, label_crop
+    global path, img_cropped, label_crop, cropped_image_path
 
     # Crop params (pixels)
     left = box.xmin
@@ -125,6 +143,7 @@ def set_cropped_image(box):
     # Save cropped image to buffer
     buffer = io.BytesIO()
     img_cropped.save(buffer, format="png")
+    img_cropped.save(cropped_image_path, format="png")
     # base64croppedImageString = base64.b64encode(buffer.getvalue()).decode('utf-8')
     # print("base64 cropped image was: ", base64croppedImageString)
     original_image.close()
@@ -135,14 +154,46 @@ def set_cropped_image(box):
         label_crop.configure(image=img_cropped)
 
 
+def write_pdf_report():
+    global path, cropped_image_path, resultData
 
+    plate = resultData.results[0].plate.upper()
+    plate_score = resultData.results[0].score
+    region = resultData.results[0].region
+    vehicle = resultData.results[0].vehicle
+
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font('Arial', 'B', 14)
+
+    # set original image details
+    original_image_fixed_height = 100
+    original_image_dynamic_width = get_image_dynamic_width_fixed_height(path, original_image_fixed_height)
+    pdf.write(5, 'Original Image: ')
+    pdf.image(path, 11, 20, original_image_dynamic_width, original_image_fixed_height)
+    pdf.write(5, '\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n')
+
+    # set license plate details
+    pdf.write(5, 'License Plate: \n')
+    cropped_image_fixed_height = 50
+    cropped_image_dynamic_width = get_image_dynamic_width_fixed_height(cropped_image_path, cropped_image_fixed_height)
+    pdf.image(cropped_image_path, 11, 140, cropped_image_dynamic_width, cropped_image_fixed_height)
+    pdf.write(5, '\n\n\n\n\n\n\n\n\n\n\n\n')
+    pdf.set_font('Arial', '', 12)
+    pdf.write(5, "Plate = {} \n".format(plate))
+    pdf.write(5, "Accuracy = {} \n".format(percent(plate_score)))
+    pdf.write(5, "Region = {} \n".format(region.code.upper()))
+    pdf.write(5, "Type = {} \n".format(vehicle.type))
+
+    # Write report
+    pdf.output("report.pdf", "F")
 
 def percent(val):
     conv_ = round(float(val) * 100)
     return str(conv_) + '%'
 
 def run():
-    global path, img_cropped, label_crop
+    global path, img_cropped, label_crop, resultData
 
     resultData = plate_recognition_api.identify_license_plate_from_image(img_base64)
     print(resultData.results)
@@ -173,6 +224,7 @@ def run():
         if region:
             label_more.configure(text=region.code.upper() + " , " + vehicle.type,
                                  font=('Times New Roman', 10, 'bold'))
+            write_pdf_report()
         else:
             label_more.configure(text="No Vehicle Info")
 
