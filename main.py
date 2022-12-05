@@ -1,14 +1,21 @@
-import tkinter as tk
-import customtkinter as ctk
-import tkinter.filedialog as dir
-from PIL import ImageTk, Image, ImageChops
-import os
-import plate_recognition_api
 import base64
-from fpdf import FPDF
-
+import csv
 import io
-import json
+import os
+import tkinter as tk
+import tkinter.filedialog as dir
+from pathlib import Path
+
+import customtkinter as ctk
+from PIL import ImageTk, Image
+
+import plate_recognition_api
+
+# Initialize empty report
+with open("report.csv", "w", newline='') as report_csv:
+    data = ["filename", "plate", "accuracy", "region", "type"]
+    writer = csv.writer(report_csv)
+    writer.writerow(data)
 
 ctk.set_appearance_mode("System")
 ctk.set_default_color_theme("blue")
@@ -97,7 +104,6 @@ label_crop.pack(fill=tk.BOTH, expand=True, padx=15, pady=15)
 
 # GLOBAL VARIABLES
 img_base64 = None
-cropped_image_path = "cropped.png"
 
 
 def load_image():
@@ -132,7 +138,7 @@ def get_image_dynamic_width_fixed_height(img_path, height):
 
 def set_cropped_image(box):
 
-    global path, img_cropped, label_crop, cropped_image_path
+    global path, img_cropped, label_crop
 
     # Crop params (pixels)
     left = box.xmin
@@ -154,7 +160,6 @@ def set_cropped_image(box):
     # Save cropped image to buffer
     buffer = io.BytesIO()
     img_cropped.save(buffer, format="png")
-    img_cropped.save(cropped_image_path, format="png")
     # base64croppedImageString = base64.b64encode(buffer.getvalue()).decode('utf-8')
     # print("base64 cropped image was: ", base64croppedImageString)
     original_image.close()
@@ -165,39 +170,20 @@ def set_cropped_image(box):
         label_crop.configure(image=img_cropped)
 
 
-def write_pdf_report():
-    global path, cropped_image_path, resultData
+def write_csv_report():
+    global path, resultData
 
+    file_name = Path(path).name
     plate = resultData.results[0].plate.upper()
     plate_score = resultData.results[0].score
     region = resultData.results[0].region
     vehicle = resultData.results[0].vehicle
 
-    pdf = FPDF()
-    pdf.add_page()
-    pdf.set_font('Arial', 'B', 14)
+    with open("report.csv", "a", newline='') as report_csv:
+        # data = ["filename", "plate", "accuracy", "region", "type"]
+        writer = csv.writer(report_csv)
+        writer.writerow([file_name, plate, percent(plate_score), region.code.upper(), vehicle.type])
 
-    # set original image details
-    original_image_fixed_height = 100
-    original_image_dynamic_width = get_image_dynamic_width_fixed_height(path, original_image_fixed_height)
-    pdf.write(5, 'Original Image: ')
-    pdf.image(path, 11, 20, original_image_dynamic_width, original_image_fixed_height)
-    pdf.write(5, '\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n')
-
-    # set license plate details
-    pdf.write(5, 'License Plate: \n')
-    cropped_image_fixed_height = 50
-    cropped_image_dynamic_width = get_image_dynamic_width_fixed_height(cropped_image_path, cropped_image_fixed_height)
-    pdf.image(cropped_image_path, 11, 140, cropped_image_dynamic_width, cropped_image_fixed_height)
-    pdf.write(5, '\n\n\n\n\n\n\n\n\n\n\n\n')
-    pdf.set_font('Arial', '', 12)
-    pdf.write(5, "Plate = {} \n".format(plate))
-    pdf.write(5, "Accuracy = {} \n".format(percent(plate_score)))
-    pdf.write(5, "Region = {} \n".format(region.code.upper()))
-    pdf.write(5, "Type = {} \n".format(vehicle.type))
-
-    # Write report
-    pdf.output("report.pdf", "F")
 
 def percent(val):
     conv_ = round(float(val) * 100)
@@ -234,7 +220,7 @@ def run():
         if region:
             label_more.configure(text=region.code.upper() + " , " + vehicle.type,
                                  font=('Times New Roman', 15, 'bold'))
-            write_pdf_report()
+            write_csv_report()
         else:
             label_more.configure(text="No Vehicle Info")
 
