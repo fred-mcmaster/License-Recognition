@@ -28,6 +28,8 @@ window.grid_rowconfigure(0, weight=1)
 window.grid_columnconfigure(0, weight=1)
 window.grid_columnconfigure(1, weight=7)
 
+
+# Left frame
 frame_left = ctk.CTkFrame(master=window, corner_radius=0)
 frame_left.grid(row=0, column=0, columnspan=1, sticky="nswe")
 
@@ -73,13 +75,12 @@ frame_right.rowconfigure(3, weight=1)
 frame_right.columnconfigure(0, weight=1)
 
 frame_img = ctk.CTkFrame(master=frame_right)
-# frame_img.grid(row=0, column=0, rowspan=2, sticky="nsew")
+
 frame_img.pack(fill=tk.BOTH, expand=True)
 frame_img.rowconfigure(0, weight=1)
 frame_img.columnconfigure(0, weight=1)
 
 frame_crop = ctk.CTkFrame(master=frame_right)
-# frame_crop.grid(row=3, column=0, sticky="nsew")
 frame_crop.pack(fill=tk.BOTH, expand=True)
 frame_crop.rowconfigure(0, weight=1)
 frame_crop.columnconfigure(0, weight=1)
@@ -87,8 +88,8 @@ frame_crop.columnconfigure(0, weight=1)
 label_img = ctk.CTkLabel(master=frame_img,
                          text="",
                          height=200,
-                         corner_radius=6,  # <- custom corner radius
-                         fg_color=("white", "gray38"),  # <- custom tuple-color
+                         corner_radius=6,
+                         fg_color=("white", "gray38"),
                          justify=tk.LEFT)
 label_img.grid(column=0, row=0, sticky="nwe")
 label_img.pack(fill=tk.BOTH, expand=True, padx=15, pady=15)
@@ -96,8 +97,8 @@ label_img.pack(fill=tk.BOTH, expand=True, padx=15, pady=15)
 label_crop = ctk.CTkLabel(master=frame_crop,
                           text="",
                           height=150,
-                          corner_radius=6,  # <- custom corner radius
-                          fg_color=("white", "gray38"),  # <- custom tuple-color
+                          corner_radius=6,
+                          fg_color=("white", "gray38"),
                           justify=tk.LEFT)
 label_crop.grid(column=0, row=0, sticky="nwe")
 label_crop.pack(fill=tk.BOTH, expand=True, padx=15, pady=15)
@@ -111,7 +112,6 @@ def load_image():
 
     path = dir.askopenfilename(initialdir=os.getcwd(), title="Select image",
                                filetypes=(("png files", "*.jpg"), ("all file", "*.*")))
-    # img = ImageTk.PhotoImage(Image.open(path).resize((400, 200), Image.ANTIALIAS))
 
     # Keep aspect ratio of the loaded image consistent
     fixed_width = 400
@@ -132,7 +132,6 @@ def get_image_dynamic_width_fixed_height(img_path, height):
     height_percent = (height / float(image.size[1]))
     dynamic_width = int((float(image.size[0]) * float(height_percent)))
     resized_image = image.resize((dynamic_width, height), Image.ANTIALIAS)
-    # resized_image.save("resized.png", format="png")
     return dynamic_width
 
 
@@ -160,8 +159,6 @@ def set_cropped_image(box):
     # Save cropped image to buffer
     buffer = io.BytesIO()
     img_cropped.save(buffer, format="png")
-    # base64croppedImageString = base64.b64encode(buffer.getvalue()).decode('utf-8')
-    # print("base64 cropped image was: ", base64croppedImageString)
     original_image.close()
 
     # Set cropped image buffer in UI
@@ -197,14 +194,14 @@ def run():
     print(resultData.results)
     print("Plate found: ", resultData.is_plate_found())
 
-    # reset UI contents
+    # Reset UI contents
     entry.delete(0, tk.END)
     entry.insert(0, "")
     label_score.configure(text="")
     label_more.configure(text="")
     label_crop.configure(text="")
 
-    # here we need to do the null check. the result list may be empty.
+    # Here we need to do the null check. the result list may be empty.
     if resultData.is_plate_found():
         plate = resultData.results[0].plate.upper()
         plate_score = resultData.results[0].score
